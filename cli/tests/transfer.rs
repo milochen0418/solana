@@ -22,8 +22,9 @@ use solana_sdk::{
 fn test_transfer() {
     solana_logger::setup();
     let mint_keypair = Keypair::new();
-    let test_validator = TestValidator::with_custom_fees(mint_keypair.pubkey(), 1);
+    let mint_pubkey = mint_keypair.pubkey();
     let faucet_addr = run_local_faucet(mint_keypair, None);
+    let test_validator = TestValidator::with_custom_fees(mint_pubkey, 1, Some(faucet_addr));
 
     let rpc_client =
         RpcClient::new_with_commitment(test_validator.rpc_url(), CommitmentConfig::processed());
@@ -38,8 +39,12 @@ fn test_transfer() {
     let sender_pubkey = config.signers[0].pubkey();
     let recipient_pubkey = Pubkey::new(&[1u8; 32]);
 
+<<<<<<< HEAD
     request_and_confirm_airdrop(&rpc_client, &faucet_addr, &sender_pubkey, 50_000, &config)
         .unwrap();
+=======
+    request_and_confirm_airdrop(&rpc_client, &config, &sender_pubkey, 50_000).unwrap();
+>>>>>>> 7dfb51c0b... Cli: move airdrop to rpc requests (#16557)
     check_recent_balance(50_000, &rpc_client, &sender_pubkey);
     check_recent_balance(0, &rpc_client, &recipient_pubkey);
 
@@ -91,7 +96,11 @@ fn test_transfer() {
     process_command(&offline).unwrap_err();
 
     let offline_pubkey = offline.signers[0].pubkey();
+<<<<<<< HEAD
     request_and_confirm_airdrop(&rpc_client, &faucet_addr, &offline_pubkey, 50, &config).unwrap();
+=======
+    request_and_confirm_airdrop(&rpc_client, &offline, &offline_pubkey, 50).unwrap();
+>>>>>>> 7dfb51c0b... Cli: move airdrop to rpc requests (#16557)
     check_recent_balance(50, &rpc_client, &offline_pubkey);
 
     // Offline transfer
@@ -258,8 +267,9 @@ fn test_transfer() {
 fn test_transfer_multisession_signing() {
     solana_logger::setup();
     let mint_keypair = Keypair::new();
-    let test_validator = TestValidator::with_custom_fees(mint_keypair.pubkey(), 1);
+    let mint_pubkey = mint_keypair.pubkey();
     let faucet_addr = run_local_faucet(mint_keypair, None);
+    let test_validator = TestValidator::with_custom_fees(mint_pubkey, 1, Some(faucet_addr));
 
     let to_pubkey = Pubkey::new(&[1u8; 32]);
     let offline_from_signer = keypair_from_seed(&[2u8; 32]).unwrap();
@@ -270,6 +280,7 @@ fn test_transfer_multisession_signing() {
     // Setup accounts
     let rpc_client =
         RpcClient::new_with_commitment(test_validator.rpc_url(), CommitmentConfig::processed());
+<<<<<<< HEAD
     request_and_confirm_airdrop(
         &rpc_client,
         &faucet_addr,
@@ -278,9 +289,18 @@ fn test_transfer_multisession_signing() {
         &config,
     )
     .unwrap();
+=======
+>>>>>>> 7dfb51c0b... Cli: move airdrop to rpc requests (#16557)
     request_and_confirm_airdrop(
         &rpc_client,
-        &faucet_addr,
+        &CliConfig::recent_for_tests(),
+        &offline_from_signer.pubkey(),
+        43,
+    )
+    .unwrap();
+    request_and_confirm_airdrop(
+        &rpc_client,
+        &CliConfig::recent_for_tests(),
         &offline_fee_payer_signer.pubkey(),
         3,
         &config,
@@ -381,8 +401,9 @@ fn test_transfer_multisession_signing() {
 fn test_transfer_all() {
     solana_logger::setup();
     let mint_keypair = Keypair::new();
-    let test_validator = TestValidator::with_custom_fees(mint_keypair.pubkey(), 1);
+    let mint_pubkey = mint_keypair.pubkey();
     let faucet_addr = run_local_faucet(mint_keypair, None);
+    let test_validator = TestValidator::with_custom_fees(mint_pubkey, 1, Some(faucet_addr));
 
     let rpc_client =
         RpcClient::new_with_commitment(test_validator.rpc_url(), CommitmentConfig::processed());
@@ -396,8 +417,12 @@ fn test_transfer_all() {
     let sender_pubkey = config.signers[0].pubkey();
     let recipient_pubkey = Pubkey::new(&[1u8; 32]);
 
+<<<<<<< HEAD
     request_and_confirm_airdrop(&rpc_client, &faucet_addr, &sender_pubkey, 50_000, &config)
         .unwrap();
+=======
+    request_and_confirm_airdrop(&rpc_client, &config, &sender_pubkey, 50_000).unwrap();
+>>>>>>> 7dfb51c0b... Cli: move airdrop to rpc requests (#16557)
     check_recent_balance(50_000, &rpc_client, &sender_pubkey);
     check_recent_balance(0, &rpc_client, &recipient_pubkey);
 
@@ -424,11 +449,63 @@ fn test_transfer_all() {
 }
 
 #[test]
+<<<<<<< HEAD
+=======
+fn test_transfer_unfunded_recipient() {
+    solana_logger::setup();
+    let mint_keypair = Keypair::new();
+    let mint_pubkey = mint_keypair.pubkey();
+    let faucet_addr = run_local_faucet(mint_keypair, None);
+    let test_validator = TestValidator::with_custom_fees(mint_pubkey, 1, Some(faucet_addr));
+
+    let rpc_client =
+        RpcClient::new_with_commitment(test_validator.rpc_url(), CommitmentConfig::processed());
+
+    let default_signer = Keypair::new();
+
+    let mut config = CliConfig::recent_for_tests();
+    config.json_rpc_url = test_validator.rpc_url();
+    config.signers = vec![&default_signer];
+
+    let sender_pubkey = config.signers[0].pubkey();
+    let recipient_pubkey = Pubkey::new(&[1u8; 32]);
+
+    request_and_confirm_airdrop(&rpc_client, &config, &sender_pubkey, 50_000).unwrap();
+    check_recent_balance(50_000, &rpc_client, &sender_pubkey);
+    check_recent_balance(0, &rpc_client, &recipient_pubkey);
+
+    check_ready(&rpc_client);
+
+    // Plain ole transfer
+    config.command = CliCommand::Transfer {
+        amount: SpendAmount::All,
+        to: recipient_pubkey,
+        from: 0,
+        sign_only: false,
+        dump_transaction_message: false,
+        allow_unfunded_recipient: false,
+        no_wait: false,
+        blockhash_query: BlockhashQuery::All(blockhash_query::Source::Cluster),
+        nonce_account: None,
+        nonce_authority: 0,
+        memo: None,
+        fee_payer: 0,
+        derived_address_seed: None,
+        derived_address_program_id: None,
+    };
+
+    // Expect failure due to unfunded recipient and the lack of the `allow_unfunded_recipient` flag
+    process_command(&config).unwrap_err();
+}
+
+#[test]
+>>>>>>> 7dfb51c0b... Cli: move airdrop to rpc requests (#16557)
 fn test_transfer_with_seed() {
     solana_logger::setup();
     let mint_keypair = Keypair::new();
-    let test_validator = TestValidator::with_custom_fees(mint_keypair.pubkey(), 1);
+    let mint_pubkey = mint_keypair.pubkey();
     let faucet_addr = run_local_faucet(mint_keypair, None);
+    let test_validator = TestValidator::with_custom_fees(mint_pubkey, 1, Some(faucet_addr));
 
     let rpc_client =
         RpcClient::new_with_commitment(test_validator.rpc_url(), CommitmentConfig::processed());
@@ -450,9 +527,14 @@ fn test_transfer_with_seed() {
     )
     .unwrap();
 
+<<<<<<< HEAD
     request_and_confirm_airdrop(&rpc_client, &faucet_addr, &sender_pubkey, 1, &config).unwrap();
     request_and_confirm_airdrop(&rpc_client, &faucet_addr, &derived_address, 50_000, &config)
         .unwrap();
+=======
+    request_and_confirm_airdrop(&rpc_client, &config, &sender_pubkey, 1).unwrap();
+    request_and_confirm_airdrop(&rpc_client, &config, &derived_address, 50_000).unwrap();
+>>>>>>> 7dfb51c0b... Cli: move airdrop to rpc requests (#16557)
     check_recent_balance(1, &rpc_client, &sender_pubkey);
     check_recent_balance(50_000, &rpc_client, &derived_address);
     check_recent_balance(0, &rpc_client, &recipient_pubkey);

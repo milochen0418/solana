@@ -1778,6 +1778,12 @@ fn verify_pubkey(input: String) -> Result<Pubkey> {
         .map_err(|e| Error::invalid_params(format!("Invalid param: {:?}", e)))
 }
 
+fn verify_hash(input: String) -> Result<Hash> {
+    input
+        .parse()
+        .map_err(|e| Error::invalid_params(format!("Invalid param: {:?}", e)))
+}
+
 fn verify_signature(input: &str) -> Result<Signature> {
     input
         .parse()
@@ -2097,6 +2103,7 @@ pub trait RpcSol {
     #[rpc(meta, name = "getEpochSchedule")]
     fn get_epoch_schedule(&self, meta: Self::Metadata) -> Result<EpochSchedule>;
 
+<<<<<<< HEAD
     #[rpc(meta, name = "getBalance")]
     fn get_balance(
         &self,
@@ -2104,6 +2111,306 @@ pub trait RpcSol {
         pubkey_str: String,
         commitment: Option<CommitmentConfig>,
     ) -> Result<RpcResponse<u64>>;
+=======
+// Full RPC interface that an API node is expected to provide
+// (rpc_minimal should also be provided by an API node)
+pub mod rpc_full {
+    use super::*;
+    #[rpc]
+    pub trait Full {
+        type Metadata;
+
+        #[rpc(meta, name = "getAccountInfo")]
+        fn get_account_info(
+            &self,
+            meta: Self::Metadata,
+            pubkey_str: String,
+            config: Option<RpcAccountInfoConfig>,
+        ) -> Result<RpcResponse<Option<UiAccount>>>;
+
+        #[rpc(meta, name = "getMultipleAccounts")]
+        fn get_multiple_accounts(
+            &self,
+            meta: Self::Metadata,
+            pubkey_strs: Vec<String>,
+            config: Option<RpcAccountInfoConfig>,
+        ) -> Result<RpcResponse<Vec<Option<UiAccount>>>>;
+
+        #[rpc(meta, name = "getProgramAccounts")]
+        fn get_program_accounts(
+            &self,
+            meta: Self::Metadata,
+            program_id_str: String,
+            config: Option<RpcProgramAccountsConfig>,
+        ) -> Result<Vec<RpcKeyedAccount>>;
+
+        #[rpc(meta, name = "getMinimumBalanceForRentExemption")]
+        fn get_minimum_balance_for_rent_exemption(
+            &self,
+            meta: Self::Metadata,
+            data_len: usize,
+            commitment: Option<CommitmentConfig>,
+        ) -> Result<u64>;
+
+        #[rpc(meta, name = "getInflationReward")]
+        fn get_inflation_reward(
+            &self,
+            meta: Self::Metadata,
+            address_strs: Vec<String>,
+            config: Option<RpcEpochConfig>,
+        ) -> Result<Vec<Option<RpcInflationReward>>>;
+
+        #[rpc(meta, name = "getInflationGovernor")]
+        fn get_inflation_governor(
+            &self,
+            meta: Self::Metadata,
+            commitment: Option<CommitmentConfig>,
+        ) -> Result<RpcInflationGovernor>;
+
+        #[rpc(meta, name = "getInflationRate")]
+        fn get_inflation_rate(&self, meta: Self::Metadata) -> Result<RpcInflationRate>;
+
+        #[rpc(meta, name = "getEpochSchedule")]
+        fn get_epoch_schedule(&self, meta: Self::Metadata) -> Result<EpochSchedule>;
+
+        #[rpc(meta, name = "getClusterNodes")]
+        fn get_cluster_nodes(&self, meta: Self::Metadata) -> Result<Vec<RpcContactInfo>>;
+
+        #[rpc(meta, name = "getRecentPerformanceSamples")]
+        fn get_recent_performance_samples(
+            &self,
+            meta: Self::Metadata,
+            limit: Option<usize>,
+        ) -> Result<Vec<RpcPerfSample>>;
+
+        #[rpc(meta, name = "getBlockCommitment")]
+        fn get_block_commitment(
+            &self,
+            meta: Self::Metadata,
+            block: Slot,
+        ) -> Result<RpcBlockCommitment<BlockCommitmentArray>>;
+
+        #[rpc(meta, name = "getGenesisHash")]
+        fn get_genesis_hash(&self, meta: Self::Metadata) -> Result<String>;
+
+        #[rpc(meta, name = "getRecentBlockhash")]
+        fn get_recent_blockhash(
+            &self,
+            meta: Self::Metadata,
+            commitment: Option<CommitmentConfig>,
+        ) -> Result<RpcResponse<RpcBlockhashFeeCalculator>>;
+
+        #[rpc(meta, name = "getFees")]
+        fn get_fees(
+            &self,
+            meta: Self::Metadata,
+            commitment: Option<CommitmentConfig>,
+        ) -> Result<RpcResponse<RpcFees>>;
+
+        #[rpc(meta, name = "getFeeCalculatorForBlockhash")]
+        fn get_fee_calculator_for_blockhash(
+            &self,
+            meta: Self::Metadata,
+            blockhash: String,
+            commitment: Option<CommitmentConfig>,
+        ) -> Result<RpcResponse<Option<RpcFeeCalculator>>>;
+
+        #[rpc(meta, name = "getFeeRateGovernor")]
+        fn get_fee_rate_governor(
+            &self,
+            meta: Self::Metadata,
+        ) -> Result<RpcResponse<RpcFeeRateGovernor>>;
+
+        #[rpc(meta, name = "getSignatureStatuses")]
+        fn get_signature_statuses(
+            &self,
+            meta: Self::Metadata,
+            signature_strs: Vec<String>,
+            config: Option<RpcSignatureStatusConfig>,
+        ) -> Result<RpcResponse<Vec<Option<TransactionStatus>>>>;
+
+        #[rpc(meta, name = "getMaxRetransmitSlot")]
+        fn get_max_retransmit_slot(&self, meta: Self::Metadata) -> Result<Slot>;
+
+        #[rpc(meta, name = "getMaxShredInsertSlot")]
+        fn get_max_shred_insert_slot(&self, meta: Self::Metadata) -> Result<Slot>;
+
+        #[rpc(meta, name = "getLargestAccounts")]
+        fn get_largest_accounts(
+            &self,
+            meta: Self::Metadata,
+            config: Option<RpcLargestAccountsConfig>,
+        ) -> Result<RpcResponse<Vec<RpcAccountBalance>>>;
+
+        #[rpc(meta, name = "getSupply")]
+        fn get_supply(
+            &self,
+            meta: Self::Metadata,
+            commitment: Option<CommitmentConfig>,
+        ) -> Result<RpcResponse<RpcSupply>>;
+
+        #[rpc(meta, name = "requestAirdrop")]
+        fn request_airdrop(
+            &self,
+            meta: Self::Metadata,
+            pubkey_str: String,
+            lamports: u64,
+            config: Option<RpcRequestAirdropConfig>,
+        ) -> Result<String>;
+
+        #[rpc(meta, name = "sendTransaction")]
+        fn send_transaction(
+            &self,
+            meta: Self::Metadata,
+            data: String,
+            config: Option<RpcSendTransactionConfig>,
+        ) -> Result<String>;
+
+        #[rpc(meta, name = "simulateTransaction")]
+        fn simulate_transaction(
+            &self,
+            meta: Self::Metadata,
+            data: String,
+            config: Option<RpcSimulateTransactionConfig>,
+        ) -> Result<RpcResponse<RpcSimulateTransactionResult>>;
+
+        #[rpc(meta, name = "getSlotLeader")]
+        fn get_slot_leader(
+            &self,
+            meta: Self::Metadata,
+            commitment: Option<CommitmentConfig>,
+        ) -> Result<String>;
+
+        #[rpc(meta, name = "getSlotLeaders")]
+        fn get_slot_leaders(
+            &self,
+            meta: Self::Metadata,
+            start_slot: Slot,
+            end_slot: Slot,
+        ) -> Result<Vec<String>>;
+
+        #[rpc(meta, name = "minimumLedgerSlot")]
+        fn minimum_ledger_slot(&self, meta: Self::Metadata) -> Result<Slot>;
+
+        #[rpc(meta, name = "getBlock")]
+        fn get_block(
+            &self,
+            meta: Self::Metadata,
+            slot: Slot,
+            config: Option<RpcEncodingConfigWrapper<RpcConfirmedBlockConfig>>,
+        ) -> Result<Option<UiConfirmedBlock>>;
+
+        #[rpc(meta, name = "getBlockTime")]
+        fn get_block_time(&self, meta: Self::Metadata, slot: Slot)
+            -> Result<Option<UnixTimestamp>>;
+
+        #[rpc(meta, name = "getBlocks")]
+        fn get_blocks(
+            &self,
+            meta: Self::Metadata,
+            start_slot: Slot,
+            config: Option<RpcConfirmedBlocksConfigWrapper>,
+            commitment: Option<CommitmentConfig>,
+        ) -> Result<Vec<Slot>>;
+
+        #[rpc(meta, name = "getBlocksWithLimit")]
+        fn get_blocks_with_limit(
+            &self,
+            meta: Self::Metadata,
+            start_slot: Slot,
+            limit: usize,
+            commitment: Option<CommitmentConfig>,
+        ) -> Result<Vec<Slot>>;
+
+        #[rpc(meta, name = "getTransaction")]
+        fn get_transaction(
+            &self,
+            meta: Self::Metadata,
+            signature_str: String,
+            config: Option<RpcEncodingConfigWrapper<RpcConfirmedTransactionConfig>>,
+        ) -> Result<Option<EncodedConfirmedTransaction>>;
+
+        #[rpc(meta, name = "getSignaturesForAddress")]
+        fn get_signatures_for_address(
+            &self,
+            meta: Self::Metadata,
+            address: String,
+            config: Option<RpcGetConfirmedSignaturesForAddress2Config>,
+        ) -> Result<Vec<RpcConfirmedTransactionStatusWithSignature>>;
+
+        #[rpc(meta, name = "getFirstAvailableBlock")]
+        fn get_first_available_block(&self, meta: Self::Metadata) -> Result<Slot>;
+
+        #[rpc(meta, name = "getStakeActivation")]
+        fn get_stake_activation(
+            &self,
+            meta: Self::Metadata,
+            pubkey_str: String,
+            config: Option<RpcEpochConfig>,
+        ) -> Result<RpcStakeActivation>;
+
+        // SPL Token-specific RPC endpoints
+        // See https://github.com/solana-labs/solana-program-library/releases/tag/token-v2.0.0 for
+        // program details
+
+        #[rpc(meta, name = "getTokenAccountBalance")]
+        fn get_token_account_balance(
+            &self,
+            meta: Self::Metadata,
+            pubkey_str: String,
+            commitment: Option<CommitmentConfig>,
+        ) -> Result<RpcResponse<UiTokenAmount>>;
+
+        #[rpc(meta, name = "getTokenSupply")]
+        fn get_token_supply(
+            &self,
+            meta: Self::Metadata,
+            mint_str: String,
+            commitment: Option<CommitmentConfig>,
+        ) -> Result<RpcResponse<UiTokenAmount>>;
+
+        #[rpc(meta, name = "getTokenLargestAccounts")]
+        fn get_token_largest_accounts(
+            &self,
+            meta: Self::Metadata,
+            mint_str: String,
+            commitment: Option<CommitmentConfig>,
+        ) -> Result<RpcResponse<Vec<RpcTokenAccountBalance>>>;
+
+        #[rpc(meta, name = "getTokenAccountsByOwner")]
+        fn get_token_accounts_by_owner(
+            &self,
+            meta: Self::Metadata,
+            owner_str: String,
+            token_account_filter: RpcTokenAccountsFilter,
+            config: Option<RpcAccountInfoConfig>,
+        ) -> Result<RpcResponse<Vec<RpcKeyedAccount>>>;
+
+        #[rpc(meta, name = "getTokenAccountsByDelegate")]
+        fn get_token_accounts_by_delegate(
+            &self,
+            meta: Self::Metadata,
+            delegate_str: String,
+            token_account_filter: RpcTokenAccountsFilter,
+            config: Option<RpcAccountInfoConfig>,
+        ) -> Result<RpcResponse<Vec<RpcKeyedAccount>>>;
+    }
+
+    pub struct FullImpl;
+    impl Full for FullImpl {
+        type Metadata = JsonRpcRequestProcessor;
+
+        fn get_account_info(
+            &self,
+            meta: Self::Metadata,
+            pubkey_str: String,
+            config: Option<RpcAccountInfoConfig>,
+        ) -> Result<RpcResponse<Option<UiAccount>>> {
+            debug!("get_account_info rpc request received: {:?}", pubkey_str);
+            let pubkey = verify_pubkey(pubkey_str)?;
+            meta.get_account_info(&pubkey, config)
+        }
+>>>>>>> 7dfb51c0b... Cli: move airdrop to rpc requests (#16557)
 
     #[rpc(meta, name = "getClusterNodes")]
     fn get_cluster_nodes(&self, meta: Self::Metadata) -> Result<Vec<RpcContactInfo>>;
@@ -2245,12 +2552,29 @@ pub trait RpcSol {
         config: Option<RpcSimulateTransactionConfig>,
     ) -> Result<RpcResponse<RpcSimulateTransactionResult>>;
 
+<<<<<<< HEAD
     #[rpc(meta, name = "getSlotLeader")]
     fn get_slot_leader(
         &self,
         meta: Self::Metadata,
         commitment: Option<CommitmentConfig>,
     ) -> Result<String>;
+=======
+        fn request_airdrop(
+            &self,
+            meta: Self::Metadata,
+            pubkey_str: String,
+            lamports: u64,
+            config: Option<RpcRequestAirdropConfig>,
+        ) -> Result<String> {
+            debug!("request_airdrop rpc request received");
+            trace!(
+                "request_airdrop id={} lamports={} config: {:?}",
+                pubkey_str,
+                lamports,
+                &config
+            );
+>>>>>>> 7dfb51c0b... Cli: move airdrop to rpc requests (#16557)
 
     #[rpc(meta, name = "getSlotLeaders")]
     fn get_slot_leaders(
@@ -2260,6 +2584,7 @@ pub trait RpcSol {
         end_slot: Slot,
     ) -> Result<Vec<String>>;
 
+<<<<<<< HEAD
     #[rpc(meta, name = "minimumLedgerSlot")]
     fn minimum_ledger_slot(&self, meta: Self::Metadata) -> Result<Slot>;
 
@@ -2269,6 +2594,17 @@ pub trait RpcSol {
         meta: Self::Metadata,
         commitment: Option<CommitmentConfig>,
     ) -> Result<RpcVoteAccountStatus>;
+=======
+            let config = config.unwrap_or_default();
+            let bank = meta.bank(config.commitment);
+
+            let blockhash = if let Some(blockhash) = config.recent_blockhash {
+                verify_hash(blockhash)?
+            } else {
+                bank.confirmed_last_blockhash().0
+            };
+            let last_valid_slot = bank.get_blockhash_last_valid_slot(&blockhash).unwrap_or(0);
+>>>>>>> 7dfb51c0b... Cli: move airdrop to rpc requests (#16557)
 
     #[rpc(meta, name = "validatorExit")]
     fn validator_exit(&self, meta: Self::Metadata) -> Result<bool>;

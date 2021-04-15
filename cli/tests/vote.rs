@@ -19,8 +19,9 @@ use solana_vote_program::vote_state::{VoteAuthorize, VoteState, VoteStateVersion
 #[test]
 fn test_vote_authorize_and_withdraw() {
     let mint_keypair = Keypair::new();
-    let test_validator = TestValidator::with_no_fees(mint_keypair.pubkey());
+    let mint_pubkey = mint_keypair.pubkey();
     let faucet_addr = run_local_faucet(mint_keypair, None);
+    let test_validator = TestValidator::with_no_fees(mint_pubkey, Some(faucet_addr));
 
     let rpc_client =
         RpcClient::new_with_commitment(test_validator.rpc_url(), CommitmentConfig::processed());
@@ -30,6 +31,7 @@ fn test_vote_authorize_and_withdraw() {
     config.json_rpc_url = test_validator.rpc_url();
     config.signers = vec![&default_signer];
 
+<<<<<<< HEAD
     request_and_confirm_airdrop(
         &rpc_client,
         &faucet_addr,
@@ -38,6 +40,10 @@ fn test_vote_authorize_and_withdraw() {
         &config,
     )
     .unwrap();
+=======
+    request_and_confirm_airdrop(&rpc_client, &config, &config.signers[0].pubkey(), 100_000)
+        .unwrap();
+>>>>>>> 7dfb51c0b... Cli: move airdrop to rpc requests (#16557)
 
     // Create vote account
     let vote_account_keypair = Keypair::new();
